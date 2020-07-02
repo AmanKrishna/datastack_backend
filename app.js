@@ -3,9 +3,25 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var config = require('./config');
+
+// connect to the database server
+const mongoose = require('mongoose');
+url = config.mongoUrl;
+// const connect = mongoose.connect(url);
+const connect = mongoose.connect(process.env.MONGODB_URI || url);
+connect.then((db)=>{
+  console.log("Connnected to server!");
+},
+(err)=>{
+  console.log(err);
+});
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var uploadAudioRouter = require('./routes/uploadAudio');
+var downloadAudioRouter = require('./routes/downloadAudio');
 
 var app = express();
 
@@ -21,6 +37,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/upload',uploadAudioRouter);
+app.use('/download',downloadAudioRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
