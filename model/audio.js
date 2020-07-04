@@ -3,8 +3,9 @@ const Schema = mongoose.Schema;
 
 const audioSchema = new Schema({
     audioBlob:{
-        type: Object,
-        required: true
+        type: String,
+        required: true,
+        unique:true
     }
 });
 

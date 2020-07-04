@@ -14,10 +14,11 @@ var cosrOptionsDelegate = (req,callback) =>{
     // check if the incoming request is in the whitelist
     if(whitelist.indexOf(req.header('Origin'))!==-1){
         // telling client that the request is from a whitelisted origin
-        console.log("Hidahdsjakdjaksjdkasjdlkj")
+        console.log("White Listed\n\n")
         corsOptions = {origin: true};
     }
     else{
+        console.log("Disabled COrs!!\n\n")
         corsOptions = {origin:false};
     }
     callback(null,corsOptions);
