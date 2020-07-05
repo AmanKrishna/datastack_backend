@@ -28,7 +28,7 @@ var app = express();
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var uploadAudioRouter = require('./routes/uploadAudio');
-var downloadAudioRouter = require('./routes/downloadAudio');
+var downloadAudioRouter = require('./routes/downloadHindiText');
 
 
 // view engine setup
