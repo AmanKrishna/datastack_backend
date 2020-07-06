@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var config = require('./config');
+var passport = require('passport');
 
 // connect to the database server
 const mongoose = require('mongoose');
@@ -19,6 +20,18 @@ connect.then((db)=>{
 
 
 var app = express();
+
+// redirect any requrest to secure server
+app.all('*',(req,res,next)=>{
+  // if the requrest is coming to the secure port
+  if(req.secure){
+    return next();
+  }
+  else{
+    console.log(req.hostname+" "+app.get('secPort')+" "+req.url);
+    res.redirect(307,'https://'+req.hostname+':'+app.get('secPort')+req.url);
+  }
+})
 // app.use(function(req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "http://localhost:3001");
 //   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,*");
@@ -41,6 +54,8 @@ app.use(express.json({limit: '5mb'}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// use passport
+app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

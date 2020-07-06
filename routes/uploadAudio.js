@@ -5,6 +5,7 @@ const AudioData = require('../model/audio');
 const cors = require("./cors");
 let multer = require('multer');
 let upload = multer();
+var authenticate = require('../authenticate');
 var fs = require('fs');
 
 const uploadAudioRouter = express.Router();
@@ -23,7 +24,7 @@ console.log("Disabled COrs!!\n\n")
 
 uploadAudioRouter.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
-.get(cors.corsWithOptions,(req,res,next)=>{
+.get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     AudioData.find({})
     .then((audio)=>{
         if(audio.length===0){
@@ -40,7 +41,7 @@ uploadAudioRouter.route('/')
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-.post(cors.corsWithOptions,(req,res,next)=>{
+.post(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     console.log("This is the body of request ",req.body)
     AudioData.create({audioBlob:req.body.name})
     .then((audio)=>{
@@ -54,7 +55,7 @@ uploadAudioRouter.route('/')
     writer.write(req.body.audioBlob);
     console.log("Maybe Successfull\n\n");
 })
-.delete(cors.corsWithOptions,(req,res,next)=>{
+.delete(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     AudioData.remove({})
     .then((resp)=>{
         console.log("Audio Uploaded");
