@@ -34,7 +34,10 @@ router.route('/')
   .catch((err)=>next(err));
 })
 
-router.post('/signup',cors.corsWithOptions,function(req,res,next){
+router.route('/signup')
+// if the client (browser) sends preflight request with options
+.options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
+.post(cors.corsWithOptions,function(req,res,next){
   // check if username already exist
   // console.log(req.headers.authorization);
   if(req.headers.authorization){
@@ -86,7 +89,10 @@ router.post('/signup',cors.corsWithOptions,function(req,res,next){
 // will automatically send back a failure message
 // and (req,res,next) will be executed after successful login
 // create JWT token as well
-router.post('/login',cors.corsWithOptions,authenticate.stoppedLoggedUser,(req,res,next)=>{
+router.route('/login')
+// if the client (browser) sends preflight request with options
+.options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
+.post(cors.corsWithOptions,(req,res,next)=>{
   if(req.headers.authorization){
     // req.flash("You are already Signed in");
     res.redirect("/");
