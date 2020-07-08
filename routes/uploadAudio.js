@@ -4,28 +4,19 @@ const mongoose = require('mongoose');
 const AudioData = require('../model/audio');
 const cors = require("./cors");
 let multer = require('multer');
-let upload = multer();
+const HindiText = require('../model/hindiText');
 var authenticate = require('../authenticate');
 var fs = require('fs');
 
 const uploadAudioRouter = express.Router();
-// uploadAudioRouter.use(upload.array());
-// uploadAudioRouter.use(upload.single('audio_data'));
 uploadAudioRouter.use(bodyParser.json());
-
-
-console.log("Disabled COrs!!\n\n")
-// uploadAudioRouter.use(function(req, res, next) {
-//     console.log('here');
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     next();
-//   });
 
 uploadAudioRouter.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     AudioData.find({})
+    .populate('speaker')
+    .populate('textInfo')
     .then((audio)=>{
         if(audio.length===0){
             res.statusCode = 200;
@@ -36,24 +27,45 @@ uploadAudioRouter.route('/')
         console.log("Audio Get Request: ",audio);
         res.statusCode = 200;
         res.setHeader('Content-Type','application/son');
-        var buffer = fs.readFileSync("./public/audio/"+audio[0].audioBlob+".txt");
-        res.json({"name":audio[0].audioBlob,"audioBlob":buffer.toString()});
+        var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName+".txt");
+        res.json({
+            "fileName":audio[0].fileName,
+            "speaker":audio[0].speaker,
+            "textInfo":audio[0].textInfo,
+            "audioBlob":buffer.toString()});
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
 .post(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
-    console.log("This is the body of request ",req.body)
-    AudioData.create({audioBlob:req.body.name})
-    .then((audio)=>{
-        console.log("Audio Uploaded");
-        res.statusCode = 200;
-        res.setHeader('Content-Type','application/son');
-        res.json({"Success":true});
-    },(err)=>next(err))
-    .catch((err)=>next(err));
-    var writer = fs.createWriteStream('./public/audio/'+req.body.name+'.txt');
-    writer.write(req.body.audioBlob);
-    console.log("Maybe Successfull\n\n");
+    if(req.body!=null){
+        AudioData.create({
+            fileName: req.body.fileName,
+            speaker: req.user._id,
+            textInfo: req.body.textInfo
+        })
+        .then((audio)=>{
+            HindiText.findByIdAndUpdate(req.body.textInfo,{
+                $set: {
+                    status: true,
+                    speaker: req.user._id
+                }
+            })
+            .then((resp)=>{
+                console.log("Audio Uploaded");
+                res.statusCode = 200;
+                res.setHeader('Content-Type','application/son');
+                res.json({"success":true});
+                var writer = fs.createWriteStream('./public/audio/'+req.body.fileName+'.txt');
+                writer.write(req.body.audioBlob)
+            },err=>next(err))
+        },(err)=>next(err))
+        .catch((err)=>next(err));
+    }
+    else{
+        err = new Error('Audio Not found in the body');
+        err.status = 404;
+        return next(err);   
+    }
 })
 .delete(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     AudioData.remove({})

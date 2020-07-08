@@ -19,8 +19,7 @@ passport.deserializeUser(User.deserializeUser());
 
 // create the JWT token
 exports.getToken = function(user){
-    return jwt.sign(user,config.secretKey,
-        {expiresIn: 3600000});
+    return jwt.sign(user,config.secretKey);
 };
 
 var opts = {};
@@ -94,27 +93,27 @@ exports.verifyAdmin = passport.authenticate('verifyAdmin',{session: false});
 //     }
 // }
 
-exports.jwtPassport = passport.use('stoppedLoggedUser',new JwtStrategy(opts,
-    (jwt_payload,done)=>{
-        console.log("JWT Payload",jwt_payload);
-        User.findOne({_id: jwt_payload._id},(err,user)=>{
-            if(err){
-                // an error occured
-                var error = new Error("This is a forbidden action!");
-                return done(error,false);
-            }
-            else if(user){
-                // return the found user
-                var error = new Error("You are already Logged in");
-                return done(null,false);
-            }
-            else{
-                // couldnt find the user
-                // can also register user here
-                return done(null,true);
-            }
-        })
-    }));
-// jwt means I will use the JwtStrategy i just specified above
-// session=should sessions be created
-exports.stoppedLoggedUser = passport.authenticate('stoppedLoggedUser',{session: false});
+// exports.jwtPassport = passport.use('stoppedLoggedUser',new JwtStrategy(opts,
+//     (jwt_payload,done)=>{
+//         console.log("JWT Payload",jwt_payload);
+//         User.findOne({_id: jwt_payload._id},(err,user)=>{
+//             if(err){
+//                 // an error occured
+//                 var error = new Error("This is a forbidden action!");
+//                 return done(error,false);
+//             }
+//             else if(user){
+//                 // return the found user
+//                 var error = new Error("You are already Logged in");
+//                 return done(null,false);
+//             }
+//             else{
+//                 // couldnt find the user
+//                 // can also register user here
+//                 return done(null,true);
+//             }
+//         })
+//     }));
+// // jwt means I will use the JwtStrategy i just specified above
+// // session=should sessions be created
+// exports.stoppedLoggedUser = passport.authenticate('stoppedLoggedUser',{session: false});

@@ -2,10 +2,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const audioSchema = new Schema({
-    audioBlob:{
+    fileName:{
         type: String,
         required: true,
         unique:true
+    },
+    speaker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'UserBase'
+    },
+    textInfo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'HindiText'
     }
 });
 
