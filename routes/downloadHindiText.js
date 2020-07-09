@@ -52,7 +52,7 @@ downloadAudioRouter.route('/')
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-.post(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
+.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     // res.statusCode = 403;
     // res.setHeader('Content-Type','application/son');
     // res.json({"Status":"Not Allowed"});
@@ -83,7 +83,7 @@ downloadAudioRouter.route('/')
         res.json({"success":true});
     })
 })
-.delete(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
+.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     HindiText.remove({})
     .then((resp)=>{
         res.statusCode = 200;

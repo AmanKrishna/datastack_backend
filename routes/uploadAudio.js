@@ -13,7 +13,7 @@ uploadAudioRouter.use(bodyParser.json());
 
 uploadAudioRouter.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
-.get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
+.get(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     AudioData.find({})
     .populate('speaker')
     .populate('textInfo')
@@ -67,7 +67,7 @@ uploadAudioRouter.route('/')
         return next(err);   
     }
 })
-.delete(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
+.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     AudioData.remove({})
     .then((resp)=>{
         console.log("Audio Uploaded");

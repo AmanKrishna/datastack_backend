@@ -14,7 +14,7 @@ const cors = require("./cors");
 router.route('/')
 // if the client (browser) sends preflight request with options
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
-.get(cors.corsWithOptions, (req, res, next) =>{
+.get(cors.corsWithOptions, authenticate.verifyAdmin,(req, res, next) =>{
   User.find({})
   .then((users)=>{
     res.statusCode=200;
@@ -23,7 +23,7 @@ router.route('/')
   },(err)=>next(err))
   .catch((err)=>next(err));
 })
-.delete(cors.corsWithOptions,(req,res,next)=>{
+.delete(cors.corsWithOptions,authenticate.verifyAdmin,(req,res,next)=>{
   User.remove({})
   .then((resp)=>{
       console.log("Audio Uploaded");
@@ -145,43 +145,6 @@ router.route('/login')
 
  
   
-});
-
-router.get('/logout',cors.corsWithOptions,(req,res,next)=>{
-  if(req.session){
-    // deleting the session from server side
-    req.session.destroy();
-    res.clearCookie('session-id');
-    res.redirect('/');
-  }
-  else{
-    var err = new Error("You are not logged int!");
-    err.status=403;
-    return next(err);
-  }
-});
-
-// Check if the JWT is still valid (due to expiration)
-router.get('/checkJWTtoken', cors.corsWithOptions, (req, res,next) => {
-  passport.authenticate('jwt', {session: false}, (err, user, info) => {
-    if (err){
-      console.log("In the error part!!")
-      return next(err);
-    }
-    // JWT token has expired!
-    if (!user) {
-      res.statusCode = 401;
-      res.setHeader('Content-Type', 'application/json');
-      return res.json({status: 'JWT invalid!', success: false, err: info});
-    }
-    // valid jwt token
-    else {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      return res.json({status: 'JWT valid!', success: true, user: user});
-
-    }
-  }) (req, res);
 });
 
 module.exports = router;
