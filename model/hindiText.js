@@ -18,6 +18,10 @@ const hindiTextSchema = new Schema({
     speaker: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'UserBase'
+    },
+    inAccess: {
+        type:Boolean,
+        default: false
     }
 });
 
