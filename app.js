@@ -32,16 +32,16 @@ app.all('*',(req,res,next)=>{
     res.redirect(307,'https://'+req.hostname+':'+app.get('secPort')+req.url);
   }
 })
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "http://localhost:3001");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,*");
-//   next();
-// });
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+  // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,*");
+  next();
+});
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var uploadAudioRouter = require('./routes/uploadAudio');
-var downloadAudioRouter = require('./routes/downloadHindiText');
+var audio = require('./routes/audio');
+var hindiText = require('./routes/hindiText');
 
 
 // view engine setup
@@ -59,8 +59,8 @@ app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/upload',uploadAudioRouter);
-app.use('/download',downloadAudioRouter);
+app.use('/audio',audio);
+app.use('/hindiText',hindiText);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

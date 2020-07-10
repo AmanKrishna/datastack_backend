@@ -7,6 +7,14 @@ const audioSchema = new Schema({
         required: true,
         unique:true
     },
+    verified:{
+        type:Number,
+        default:0
+    },
+    verificationResult:{
+        type:Number,
+        default:0
+    },
     speaker: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'UserBase'

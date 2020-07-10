@@ -8,17 +8,17 @@ let upload = multer();
 var fs = require('fs');
 var authenticate = require('../authenticate');
 
-const downloadAudioRouter = express.Router();
-downloadAudioRouter.use(bodyParser.json());
+const hindiText = express.Router();
+hindiText.use(bodyParser.json());
 
-module.exports = downloadAudioRouter;
-downloadAudioRouter.route('/')
+module.exports = hindiText;
+hindiText.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
-    // HindiText.find({})
+    HindiText.find({})
     // .then((hindiText)=>{
     //     res.statusCode = 200;
-    //     res.setHeader('Content-Type','application/son');
+    //     res.setHeader('Content-Type','application/json');
     //     res.json(hindiText);
     //     return;
     // })
@@ -29,7 +29,7 @@ downloadAudioRouter.route('/')
     .then((hindiText)=>{
         if(hindiText.length===0){
             res.statusCode = 200;
-            res.setHeader('Content-Type','application/son');
+            res.setHeader('Content-Type','application/json');
             res.json({
                 fileName: "None",
                 hindiText: "Try Again Later",
@@ -44,9 +44,9 @@ downloadAudioRouter.route('/')
             }
         },{ new: true })
         .then((hindiText)=>{
-            console.log("Audio Get Request: ",hindiText);
+            // console.log("Audio Get Request: ",hindiText);
             res.statusCode = 200;
-            res.setHeader('Content-Type','application/son');
+            res.setHeader('Content-Type','application/json');
             res.json(hindiText);
         },(err)=>next(err))
     },(err)=>next(err))
@@ -54,7 +54,7 @@ downloadAudioRouter.route('/')
 })
 .post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     // res.statusCode = 403;
-    // res.setHeader('Content-Type','application/son');
+    // res.setHeader('Content-Type','application/json');
     // res.json({"Status":"Not Allowed"});
 
     console.log("In Post\n")
@@ -67,7 +67,7 @@ downloadAudioRouter.route('/')
         .then((resp)=>console.log(resp))
     }
     res.statusCode = 200;
-    res.setHeader('Content-Type','application/son');
+    res.setHeader('Content-Type','application/json');
     res.json({"success":"true"});
 })
 .put(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
@@ -87,20 +87,20 @@ downloadAudioRouter.route('/')
     HindiText.remove({})
     .then((resp)=>{
         res.statusCode = 200;
-        res.setHeader('Content-Type','application/son');
+        res.setHeader('Content-Type','application/json');
         res.json(resp);
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
 
 
-downloadAudioRouter.route('/:hindiTextId')
+hindiText.route('/:hindiTextId')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     HindiText.findById(req.params.hindiTextId)
     .then((hindiText)=>{
         res.statusCode = 200;
-        res.setHeader('Content-Type','application/son');
+        res.setHeader('Content-Type','application/json');
         res.json(hindiText);
         return;
     })
