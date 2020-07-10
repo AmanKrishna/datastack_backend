@@ -16,6 +16,14 @@ var User = new Schema({
         required: true
         // 0 male
         // 1 Female
+    },
+    recored:{
+        type: Number,
+        default: 0
+    },
+    verified:{
+        type:Number,
+        default:0
     }
 });
 // adds the username and hashed password

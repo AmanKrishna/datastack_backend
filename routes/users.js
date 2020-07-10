@@ -14,7 +14,7 @@ const cors = require("./cors");
 router.route('/')
 // if the client (browser) sends preflight request with options
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
-.get(cors.corsWithOptions, authenticate.verifyAdmin,(req, res, next) =>{
+.get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
   User.find({})
   .then((users)=>{
     res.statusCode=200;
@@ -23,7 +23,7 @@ router.route('/')
   },(err)=>next(err))
   .catch((err)=>next(err));
 })
-.delete(cors.corsWithOptions,authenticate.verifyAdmin,(req,res,next)=>{
+.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
   User.remove({})
   .then((resp)=>{
       console.log("Audio Uploaded");
@@ -40,7 +40,7 @@ router.route('/signup')
 .post(cors.corsWithOptions,function(req,res,next){
   // check if username already exist
   // console.log(req.headers.authorization);
-  if(req.headers.authorization){
+  if(req.user){
     // req.flash("You are already Signed in");
     res.redirect("/");
     return;
@@ -93,7 +93,7 @@ router.route('/login')
 // if the client (browser) sends preflight request with options
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .post(cors.corsWithOptions,(req,res,next)=>{
-  if(req.headers.authorization){
+  if(req.user){
     // req.flash("You are already Signed in");
     res.redirect("/");
     return;
@@ -142,9 +142,88 @@ router.route('/login')
       });
     });
   })(req,res,next);
-
- 
-  
 });
+
+router.route('/:username')
+.options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
+.get(cors.corsWithOptions,authenticate.verifyUser,(req, res, next) =>{
+  // console.log(req.user._id+"\n"+req.params.userId);
+  User.findOne({"_id":req.user._id})
+  .then((user)=>{
+    if(user.username==req.params.username)
+    {
+      User.findOne({"_id":req.user._id})
+      .then((user)=>{
+        console.log(user);
+        res.statusCode=200;
+        res.setHeader('Content-type','application/json');
+        res.json({
+          verified:user.verified,
+          recorded:user.recored
+        });    
+      },(err)=>next(err))
+      .catch((err)=>next(err));
+    }
+    else{
+      res.statusCode=403;
+      res.setHeader('Content-type','application/json');
+      res.json({
+        success:false,
+        message:"Unauthorized Action"
+      }); 
+    }
+  })
+  })
+
+.put(cors.corsWithOptions,authenticate.verifyUser,(req, res, next) =>{
+  User.findOne({"_id":req.user._id})
+  .then((user)=>{
+    if(user.username==req.params.username)
+    {
+      if(req.body.recorded){
+        User.findByIdAndUpdate({"_id":req.user._id},{
+          $inc :{
+            recored:1
+          }
+        },{new:true})
+        .then((user)=>{
+          console.log(user);
+          res.statusCode=200;
+          res.setHeader('Content-type','application/json');
+          res.json({
+            success:true,
+            message:"Recod count incremented"
+          });    
+        },(err)=>next(err))
+        .catch((err)=>next(err));
+      }
+      else{
+        User.findByIdAndUpdate({"_id":req.user._id},{
+          $inc :{
+            verified:1
+          }
+        },{new:true})
+        .then((user)=>{
+          console.log(user);
+          res.statusCode=200;
+          res.setHeader('Content-type','application/json');
+          res.json({
+            success:true,
+            message:"Verify count incremented"
+          });    
+        },(err)=>next(err))
+        .catch((err)=>next(err));
+      }
+    }
+    else{
+      res.statusCode=403;
+      res.setHeader('Content-type','application/json');
+      res.json({
+        success:false,
+        message:"Unauthorized Action"
+      }); 
+    }
+  })
+})
 
 module.exports = router;

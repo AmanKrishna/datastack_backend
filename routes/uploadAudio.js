@@ -28,11 +28,13 @@ uploadAudioRouter.route('/')
         res.statusCode = 200;
         res.setHeader('Content-Type','application/son');
         var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName+".txt");
-        res.json({
-            "fileName":audio[0].fileName,
-            "speaker":audio[0].speaker,
-            "textInfo":audio[0].textInfo,
-            "audioBlob":buffer.toString()});
+        res.json(audio);
+        // res.json({
+        //     "fileName":audio[0].fileName,
+        //     "speaker":audio[0].speaker,
+        //     "textInfo":audio[0].textInfo,
+        //     "audioBlob":buffer.toString()
+        // })
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
