@@ -24,7 +24,13 @@ var User = new Schema({
     verified:{
         type:Number,
         default:0
+    },
+    lastActive:{
+        type:Date,
+        default:Date.now
     }
+}, {
+    timestamps: true
 });
 // adds the username and hashed password
 User.plugin(passportLocalMongoose);

@@ -11,11 +11,10 @@ var authenticate = require('../authenticate');
 const hindiText = express.Router();
 hindiText.use(bodyParser.json());
 
-module.exports = hindiText;
 hindiText.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
-    HindiText.find({})
+    // HindiText.find({})
     // .then((hindiText)=>{
     //     res.statusCode = 200;
     //     res.setHeader('Content-Type','application/json');
@@ -105,4 +104,7 @@ hindiText.route('/:hindiTextId')
         return;
     })
     .catch((err)=>next(err));
-})
+});
+
+
+module.exports = hindiText;

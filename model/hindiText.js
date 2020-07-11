@@ -23,6 +23,8 @@ const hindiTextSchema = new Schema({
         type:Boolean,
         default: false
     }
+}, {
+    timestamps: true
 });
 
 var HindiText = mongoose.model("HindiText",hindiTextSchema);

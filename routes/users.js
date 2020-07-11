@@ -14,25 +14,25 @@ const cors = require("./cors");
 router.route('/')
 // if the client (browser) sends preflight request with options
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
-.get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
-  User.find({})
-  .then((users)=>{
-    res.statusCode=200;
-    res.setHeader('Content-type','application/json');
-    res.json(users);    
-  },(err)=>next(err))
-  .catch((err)=>next(err));
-})
-.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
-  User.remove({})
-  .then((resp)=>{
-      console.log("Audio Uploaded");
-      res.statusCode = 200;
-      res.setHeader('Content-Type','application/json');
-      res.json(resp);
-  },(err)=>next(err))
-  .catch((err)=>next(err));
-})
+// .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
+//   User.find({})
+//   .then((users)=>{
+//     res.statusCode=200;
+//     res.setHeader('Content-type','application/json');
+//     res.json(users);    
+//   },(err)=>next(err))
+//   .catch((err)=>next(err));
+// })
+// .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+//   User.remove({})
+//   .then((resp)=>{
+//       console.log("Audio Uploaded");
+//       res.statusCode = 200;
+//       res.setHeader('Content-Type','application/json');
+//       res.json(resp);
+//   },(err)=>next(err))
+//   .catch((err)=>next(err));
+// })
 
 router.route('/signup')
 // if the client (browser) sends preflight request with options
@@ -51,12 +51,13 @@ router.route('/signup')
     gender: req.body.gender
   }),
     req.body.password, (err,user)=>{
-      console.log(req.body)
+    console.log(err);
     if(err)
     {
+      console.log("Here 1");
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
-      res.json({err: err});
+      res.json({err: "Error occured in the err part: "+err});
     }
     else{
       // if the user is successfully registered
@@ -65,16 +66,18 @@ router.route('/signup')
       //   user.name = req.body.name;
       // if(req.body.lastname)
       //   user.gender = req.body.gender;
+      console.log("Herer 2");
       user.save((err,user)=>{
         // if there is an erro
         if(err){
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
-          res.json({err: err});  
+          res.json({err: "Error occured in the save part: "+err});  
           return;        
         }
         // authenticate the same user to check if 
         // sighup was successful and this is the sytanx
+        console.log("Herer 3");
         passport.authenticate('local')(req, res, ()=>{
           res.statusCode=200;
           res.setHeader('Content-Type','application/json');
@@ -144,6 +147,7 @@ router.route('/login')
   })(req,res,next);
 });
 
+// get the #of verifications and recroding for this user
 router.route('/:username')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req, res, next) =>{
@@ -152,7 +156,12 @@ router.route('/:username')
   .then((user)=>{
     if(user.username==req.params.username)
     {
-      User.findOne({"_id":req.user._id})
+      console.log("User before Update: ",user);
+      User.findByIdAndUpdate(req.user._id,{
+        $set:{
+          lastActive:Date.now()
+        }
+      },{new: true})
       .then((user)=>{
         console.log(user);
         res.statusCode=200;
@@ -184,6 +193,9 @@ router.route('/:username')
         User.findByIdAndUpdate({"_id":req.user._id},{
           $inc :{
             recored:1
+          },
+          $set:{
+            lastActive:Date.now()
           }
         },{new:true})
         .then((user)=>{
@@ -201,6 +213,9 @@ router.route('/:username')
         User.findByIdAndUpdate({"_id":req.user._id},{
           $inc :{
             verified:1
+          },
+          $set:{
+            lastActive:Date.now()
           }
         },{new:true})
         .then((user)=>{

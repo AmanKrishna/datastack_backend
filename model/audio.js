@@ -23,6 +23,8 @@ const audioSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'HindiText'
     }
+}, {
+    timestamps: true
 });
 
 var Audio = mongoose.model("AudioData",audioSchema);
