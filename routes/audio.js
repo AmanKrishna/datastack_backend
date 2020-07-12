@@ -82,6 +82,7 @@ audio.route('/')
         return next(err);   
     }
 })
+// Verificatoin of an audio
 .put(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     AudioData.findByIdAndUpdate(req.body._id,
         {
@@ -104,6 +105,19 @@ audio.route('/')
 })
 .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     AudioData.remove({})
+    .then((resp)=>{
+        console.log("Audio Uploaded");
+        res.statusCode = 200;
+        res.setHeader('Content-Type','application/json');
+        res.json(resp);
+    },(err)=>next(err))
+    .catch((err)=>next(err));
+})
+
+audio.route('/:audioId')
+.options(cors.cors,(req,res)=>res.sendStatus=200)
+.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+    AudioData.findByIdAndDelete(req.params.audioId)
     .then((resp)=>{
         console.log("Audio Uploaded");
         res.statusCode = 200;
