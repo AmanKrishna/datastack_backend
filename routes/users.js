@@ -156,14 +156,14 @@ router.route('/:username')
   .then((user)=>{
     if(user.username==req.params.username)
     {
-      console.log("User before Update: ",user);
+      // console.log("User before Update: ",user);
       User.findByIdAndUpdate(req.user._id,{
         $set:{
           lastActive:Date.now()
         }
       },{new: true})
       .then((user)=>{
-        console.log(user);
+        // console.log(user);
         res.statusCode=200;
         res.setHeader('Content-type','application/json');
         res.json({
@@ -219,7 +219,7 @@ router.route('/:username')
           }
         },{new:true})
         .then((user)=>{
-          console.log(user);
+          // console.log(user);
           res.statusCode=200;
           res.setHeader('Content-type','application/json');
           res.json({

@@ -28,7 +28,7 @@ audio.route('/')
     // .populate('speaker')
     // .populate('textInfo')
     .then((audio)=>{
-        // console.log(typeof(audio[0].textInfo));
+        console.log(audio);
         if(audio.length===0){
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
@@ -40,7 +40,7 @@ audio.route('/')
         // console.log("Audio Get Request: ",audio);
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName+".txt");
+        var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName);
         res.json({
             "success":true,
             "_id":audio[0]._id,
@@ -48,7 +48,7 @@ audio.route('/')
             "textInfo":audio[0].hindiText[0].hindiText,
             "audioBlob":buffer.toString()
         })
-    },(err)=>next(err))
+    },(err)=>next("Audio Fetch failed!!!!"))
     .catch((err)=>next(err));
 })
 .post(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
@@ -66,12 +66,16 @@ audio.route('/')
                 }
             })
             .then((resp)=>{
-                console.log("Audio Uploaded");
+                console.log(typeof(req.body.audioBlob));
                 res.statusCode = 200;
                 res.setHeader('Content-Type','application/json');
                 res.json({"success":true});
-                var writer = fs.createWriteStream('./public/audio/'+req.body.fileName+'.txt');
-                writer.write(req.body.audioBlob)
+                var buffer = new Buffer(req.body.audioBlob,'base64');
+                // fs.writeFile('./public/audio/'+req.body.fileName.substr(0,req.body.fileName.lastIndexOf("."))+'.wav',buffer);
+                var writer = fs.createWriteStream('./public/audio/'+req.body.fileName);
+                var writer2 = fs.createWriteStream('./public/audio/'+req.body.fileName.substr(0,req.body.fileName.lastIndexOf("."))+'.wav');
+                writer.write(req.body.audioBlob);
+                writer2.write(buffer);
             },err=>next(err))
         },(err)=>next(err))
         .catch((err)=>next(err));
@@ -106,7 +110,7 @@ audio.route('/')
 .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     AudioData.remove({})
     .then((resp)=>{
-        console.log("Audio Uploaded");
+        // console.log("Audio Uploaded");
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
         res.json(resp);
@@ -114,15 +118,26 @@ audio.route('/')
     .catch((err)=>next(err));
 })
 
-audio.route('/:audioId')
+audio.route('/:audioId/:textId')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     AudioData.findByIdAndDelete(req.params.audioId)
     .then((resp)=>{
-        console.log("Audio Uploaded");
-        res.statusCode = 200;
-        res.setHeader('Content-Type','application/json');
-        res.json(resp);
+        HindiText.findByIdAndUpdate(req.params.textId,{
+            $set: {
+                status: false,
+                speaker: null,
+                inAccess:false
+            }
+        },{new:true})
+        .then((hindiText)=>{
+            // console.log(hindiText);
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json({
+                success:true
+            });
+        })
     },(err)=>next(err))
     .catch((err)=>next(err));
 })

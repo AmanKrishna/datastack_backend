@@ -102,21 +102,25 @@ adminRouter.route('/audio/count/time/:hours')
 })
 
 // get audio by number
-adminRouter.route('/audio/list/time/:hours/:maxNumber')
+adminRouter.route('/audio/list/time/:hours/:maxNumber/:verified/:verificationResult')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
+  console.log("kjndjkasdasjhdoiajdoiajsd");
   Audio.find({
-    "updatedAt":{$gt:new Date(Date.now() - req.params.hours*60*60*1000)}
+    "updatedAt":{$gt:new Date(Date.now() - req.params.hours*60*60*1000)},
+    "verified":parseInt(req.params.verified),
+    "verificationResult":parseInt(req.params.verificationResult)
   })
   .limit(parseInt(req.params.maxNumber))
   .populate("speaker")
   .populate("textInfo")
   .lean()
   .then((audios)=>{
+    console.log(audios);
     res.statusCode=200;
     res.setHeader('Content-type','application/json');
     for(let i=0;i<audios.length;++i){
-      var buffer = fs.readFileSync("./public/audio/"+audios[i].fileName+".txt");
+      var buffer = fs.readFileSync("./public/audio/"+audios[i].fileName);
       audios[i].audioBlob = buffer.toString();
     }
     res.json(audios);    
@@ -139,11 +143,10 @@ adminRouter.route('/audio/file/:fileName')
     // console.log(audio);
     res.statusCode=200;
     res.setHeader('Content-type','application/json');
-    var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName+".txt");
+    var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName);
     audio[0].audioBlob = buffer.toString();
     res.json(audio);    
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-
 module.exports = adminRouter;
