@@ -122,12 +122,15 @@ adminRouter.route('/audio/list/time/:hours/:maxNumber/:verified/:verificationRes
     for(let i=0;i<audios.length;++i){
       var buffer = fs.readFileSync("./public/audio/"+audios[i].fileName);
       audios[i].audioBlob = buffer.toString();
+      var wavFile = fs.readFileSync("./public/audio/"+audios[i].fileName.substr(0,audios[i].fileName.lastIndexOf("."))+'.wav','binary');
+      audios[i].wavFile = wavFile;
     }
     res.json(audios);    
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
 
+// get specidifc file
 adminRouter.route('/audio/file/:fileName')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
@@ -144,7 +147,9 @@ adminRouter.route('/audio/file/:fileName')
     res.statusCode=200;
     res.setHeader('Content-type','application/json');
     var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName);
+    var wavFile = fs.readFileSync("./public/audio/"+audio[0].fileName.substr(0,audio[0].fileName.lastIndexOf("."))+'.wav','binary');
     audio[0].audioBlob = buffer.toString();
+    audio[0].wavFile = wavFile;
     res.json(audio);    
     },(err)=>next(err))
     .catch((err)=>next(err));

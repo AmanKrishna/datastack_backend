@@ -41,12 +41,15 @@ audio.route('/')
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
         var buffer = fs.readFileSync("./public/audio/"+audio[0].fileName);
+        var wavFile = fs.readFileSync("./public/audio/"+audio[0].fileName.substr(0,audio[0].fileName.lastIndexOf("."))+'.wav','binary');
+        
         res.json({
             "success":true,
             "_id":audio[0]._id,
             "speaker":audio[0].speaker,
             "textInfo":audio[0].hindiText[0].hindiText,
-            "audioBlob":buffer.toString()
+            "audioBlob":buffer.toString(),
+            "wavFile":wavFile
         })
     },(err)=>next("Audio Fetch failed!!!!"))
     .catch((err)=>next(err));
@@ -70,7 +73,10 @@ audio.route('/')
                 res.statusCode = 200;
                 res.setHeader('Content-Type','application/json');
                 res.json({"success":true});
-                var buffer = new Buffer(req.body.audioBlob,'base64');
+                var after_split = req.body.audioBlob.split(',')[1]
+                var buffer = new Buffer(after_split,'base64');
+                // console.log("\n\n"+after_split);
+                // console.log(req.body.audioBlob);
                 // fs.writeFile('./public/audio/'+req.body.fileName.substr(0,req.body.fileName.lastIndexOf("."))+'.wav',buffer);
                 var writer = fs.createWriteStream('./public/audio/'+req.body.fileName);
                 var writer2 = fs.createWriteStream('./public/audio/'+req.body.fileName.substr(0,req.body.fileName.lastIndexOf("."))+'.wav');
