@@ -13,6 +13,41 @@ const cors = require("./cors");
 const adminRouter = express.Router();
 adminRouter.use(bodyParser.json());
 
+
+// check if admin!
+adminRouter.route('/isAdmin')
+.options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
+.get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
+  console.log(req.params.minVerify+" "+req.params.maxVerify);
+  User.findById(req.user._id)
+    .then((user)=>{
+      if(!user){
+        console.log(user)
+        res.statusCode=200;
+        res.setHeader('Content-type','application/json');
+        res.json({
+          "success":false
+        });
+        return;
+      }
+      if(user.admin){
+        console.log(user)
+        res.statusCode=200;
+        res.setHeader('Content-type','application/json');
+        res.json({
+          "success":true
+        });
+        return;
+      }
+      console.log(user)
+      res.statusCode=200;
+      res.setHeader('Content-type','application/json');
+      res.json({
+        "success":false
+      });
+    },(err)=>next(err))
+    .catch((err)=>next(err));
+})
 // get By lastActive
 adminRouter.route('/users/:hours/:minRecord/:maxRecord/:minVerify/:maxVerify')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
