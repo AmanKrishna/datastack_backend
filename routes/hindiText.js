@@ -51,24 +51,24 @@ hindiText.route('/')
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
-    // res.statusCode = 403;
-    // res.setHeader('Content-Type','application/json');
-    // res.json({"Status":"Not Allowed"});
+// .post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+//     // res.statusCode = 403;
+//     // res.setHeader('Content-Type','application/json');
+//     // res.json({"Status":"Not Allowed"});
 
-    console.log("In Post\n")
-    for(let i=0;i<20;++i){
-        var buffer = fs.readFileSync("./public/hinditext/"+"sample_"+i+".txt").toString();
-        HindiText.create({
-            fileName:"sample_"+i+".txt",
-            hindiText: buffer,
-        })
-        .then((resp)=>console.log(resp))
-    }
-    res.statusCode = 200;
-    res.setHeader('Content-Type','application/json');
-    res.json({"success":"true"});
-})
+//     console.log("In Post\n")
+//     for(let i=0;i<11;++i){
+//         var buffer = fs.readFileSync("./public/hinditext_in_db/"+"sample_"+i+".txt").toString();
+//         HindiText.create({
+//             fileName:"sample_"+i+".txt",
+//             hindiText: buffer,
+//         })
+//         .then((resp)=>console.log(resp))
+//     }
+//     res.statusCode = 200;
+//     res.setHeader('Content-Type','application/json');
+//     res.json({"success":"true"});
+// })
 .put(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     HindiText.findByIdAndUpdate(req.body.hindiTextId,{
         $set:{

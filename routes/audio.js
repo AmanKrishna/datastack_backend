@@ -131,6 +131,7 @@ audio.route('/:audioId/:textId')
         },{new:true})
         .then((hindiText)=>{
             // console.log(hindiText);
+            fs.unlinkSync('./public/audio/'+hindiText.fileName.substr(0,hindiText.fileName.lastIndexOf("."))+'.wav')
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
             res.json({
