@@ -14,13 +14,6 @@ hindiText.use(bodyParser.json());
 hindiText.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
-    // HindiText.find({})
-    // .then((hindiText)=>{
-    //     res.statusCode = 200;
-    //     res.setHeader('Content-Type','application/json');
-    //     res.json(hindiText);
-    //     return;
-    // })
     HindiText.aggregate([
         {$match:{status:false,inAccess:false}},
         {$sample:{size:1}}
@@ -51,24 +44,6 @@ hindiText.route('/')
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-// .post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
-//     // res.statusCode = 403;
-//     // res.setHeader('Content-Type','application/json');
-//     // res.json({"Status":"Not Allowed"});
-
-//     console.log("In Post\n")
-//     for(let i=0;i<11;++i){
-//         var buffer = fs.readFileSync("./public/hinditext_in_db/"+"sample_"+i+".txt").toString();
-//         HindiText.create({
-//             fileName:"sample_"+i+".txt",
-//             hindiText: buffer,
-//         })
-//         .then((resp)=>console.log(resp))
-//     }
-//     res.statusCode = 200;
-//     res.setHeader('Content-Type','application/json');
-//     res.json({"success":"true"});
-// })
 .put(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     HindiText.findByIdAndUpdate(req.body.hindiTextId,{
         $set:{
@@ -82,20 +57,20 @@ hindiText.route('/')
         res.json({"success":true});
     })
 })
-.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
-    HindiText.remove({})
-    .then((resp)=>{
-        res.statusCode = 200;
-        res.setHeader('Content-Type','application/json');
-        res.json(resp);
-    },(err)=>next(err))
-    .catch((err)=>next(err));
-})
+// .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+//     HindiText.remove({})
+//     .then((resp)=>{
+//         res.statusCode = 200;
+//         res.setHeader('Content-Type','application/json');
+//         res.json(resp);
+//     },(err)=>next(err))
+//     .catch((err)=>next(err));
+// })
 
 
 hindiText.route('/:hindiTextId')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
-.get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
+.get(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
     HindiText.findById(req.params.hindiTextId)
     .then((hindiText)=>{
         res.statusCode = 200;

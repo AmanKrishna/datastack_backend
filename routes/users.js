@@ -1,38 +1,15 @@
 const bodyParser = require('body-parser');
 var User = require('../model/user');
+var PasswordReset = require('../model/passwordReset');
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var authenticate = require('../authenticate')
-
+var nodemailer = require('nodemailer');
+var crypto = require("crypto");
 // calling cors
 const cors = require("./cors");
 
-/* GET users listing. */
-// in case of Preflight
-// router.options('*',cors.corsWithOptions,(req,res)=>{res.status=200;})
-router.route('/')
-// if the client (browser) sends preflight request with options
-.options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
-// .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
-//   User.find({})
-//   .then((users)=>{
-//     res.statusCode=200;
-//     res.setHeader('Content-type','application/json');
-//     res.json(users);    
-//   },(err)=>next(err))
-//   .catch((err)=>next(err));
-// })
-// .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
-//   User.remove({})
-//   .then((resp)=>{
-//       console.log("Audio Uploaded");
-//       res.statusCode = 200;
-//       res.setHeader('Content-Type','application/json');
-//       res.json(resp);
-//   },(err)=>next(err))
-//   .catch((err)=>next(err));
-// })
 
 router.route('/signup')
 // if the client (browser) sends preflight request with options
@@ -185,60 +162,174 @@ router.route('/:username')
   })
 
 .put(cors.corsWithOptions,authenticate.verifyUser,(req, res, next) =>{
-  User.findOne({"_id":req.user._id})
-  .then((user)=>{
-    if(user.username==req.params.username)
-    {
-      if(req.body.recorded){
-        User.findByIdAndUpdate({"_id":req.user._id},{
-          $inc :{
-            recored:1
-          },
-          $set:{
-            lastActive:Date.now()
-          }
-        },{new:true})
-        .then((user)=>{
-          console.log(user);
-          res.statusCode=200;
-          res.setHeader('Content-type','application/json');
-          res.json({
-            success:true,
-            message:"Recod count incremented"
-          });    
-        },(err)=>next(err))
-        .catch((err)=>next(err));
+  if(req.body && req.body.recorded!=null && req.body.recorded!=undefined){
+    User.findOne({"_id":req.user._id})
+    .then((user)=>{
+      // check if requesting user same as the username provided
+      if(user.username==req.params.username)
+      {
+        if(req.body.recorded){
+          User.findByIdAndUpdate({"_id":req.user._id},{
+            $inc :{
+              recored:1
+            },
+            $set:{
+              lastActive:Date.now()
+            }
+          },{new:true})
+          .then((user)=>{
+            console.log(user);
+            res.statusCode=200;
+            res.setHeader('Content-type','application/json');
+            res.json({
+              success:true,
+              message:"Recod count incremented"
+            });    
+          },(err)=>next(err))
+          .catch((err)=>next(err));
+        }
+        else{
+          User.findByIdAndUpdate({"_id":req.user._id},{
+            $inc :{
+              verified:1
+            },
+            $set:{
+              lastActive:Date.now()
+            }
+          },{new:true})
+          .then((user)=>{
+            // console.log(user);
+            res.statusCode=200;
+            res.setHeader('Content-type','application/json');
+            res.json({
+              success:true,
+              message:"Verify count incremented"
+            });    
+          },(err)=>next(err))
+          .catch((err)=>next(err));
+        }
       }
       else{
-        User.findByIdAndUpdate({"_id":req.user._id},{
-          $inc :{
-            verified:1
-          },
-          $set:{
-            lastActive:Date.now()
-          }
-        },{new:true})
-        .then((user)=>{
-          // console.log(user);
-          res.statusCode=200;
-          res.setHeader('Content-type','application/json');
-          res.json({
-            success:true,
-            message:"Verify count incremented"
-          });    
-        },(err)=>next(err))
-        .catch((err)=>next(err));
+        res.statusCode=403;
+        res.setHeader('Content-type','application/json');
+        res.json({
+          success:false,
+          message:"Unauthorized Action"
+        }); 
       }
+    });
+  }
+  else{
+    res.statusCode=403;
+    res.setHeader('Content-type','application/json');
+    res.json({
+      success:false,
+      message:"Unauthorized Action"
+    }); 
+  }
+});
+
+// reset password
+router.route('/resetPassword')
+// if the client (browser) sends preflight request with options
+.options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
+.post(cors.corsWithOptions,(req, res, next) =>{
+  User.findOne({"username":req.body.email})
+  .then((user)=>{
+    if(user){
+      // create token
+      var resetToken = crypto.randomBytes(20).toString('hex');
+      // Set the mail to be sent
+      var transporter = nodemailer.createTransport({
+        service: 'outlook',
+        auth: {
+          user: 'datastack.ai@outlook.com',
+          pass: 'ourfirstbusiness2020'
+        }
+      });
+
+      var mailOptions = {
+        from: 'datastack.ai@outlook.com',
+        to: req.body.email,
+        subject: 'Reset Password',
+        text: 'Please click on the link to reset your password.\nLink will be valid for 1 hour\n\n'+
+        'https://'+req.headers.host+'/reset/'+resetToken+
+        '\n\n Ignore if you didnot request this mail.'
+      };
+
+      PasswordReset.findOne({eamil:req.body.email})
+      .then((resp)=>{
+        console.log("Check if present in Password Reset: "+resp);
+        if(resp){
+          PasswordReset.findByIdAndUpdate(resp._id,{
+            $set:{
+              token:resetToken,
+              expiry:Date.now()+3600000
+            }
+          },{new:true})
+          .then((resp)=>{
+            console.log("Modified: "+resp);
+            // send the mail
+            transporter.sendMail(mailOptions, function(error, info){
+              if (error) {
+                res.statusCode=200;
+                res.setHeader('Content-type','application/json');
+                res.json({
+                  "success":false,
+                  "message":"Error Occured. Please try again: "+error
+              });
+              } else {
+                res.statusCode=200;
+                res.setHeader('Content-type','application/json');
+                res.json({
+                  "success":true,
+                  "message":"Check your email for the link to reset password"
+                });
+              }
+            });
+          })
+        }
+        else{
+          PasswordReset.create({
+            eamil:req.body.email,
+            token:resetToken,
+            expiry:Date.now()+3600000
+          })
+          .then((resp)=>{
+            console.log("Created: "+resp);
+            transporter.sendMail(mailOptions, function(error, info){
+              if (error) {
+                res.statusCode=200;
+                res.setHeader('Content-type','application/json');
+                res.json({
+                  "success":false,
+                  "message":"Error Occured. Please try again: "+error
+              });
+              } else {
+                res.statusCode=200;
+                res.setHeader('Content-type','application/json');
+                res.json({
+                  "success":true,
+                  "message":"Check your email for the link to reset password"
+                });
+              }
+            });
+          })
+        }
+      })
     }
     else{
-      res.statusCode=403;
+      res.statusCode=200;
       res.setHeader('Content-type','application/json');
       res.json({
-        success:false,
-        message:"Unauthorized Action"
-      }); 
-    }
-  })
+        "success":false,
+        "message":"Email Id not found"
+      });  
+    }  
+  },(err)=>next(err))
+  .catch((err)=>next(err));
 })
+
+
 
 module.exports = router;

@@ -42,7 +42,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var audio = require('./routes/audio');
 var hindiText = require('./routes/hindiText');
-var adminRoute = require('./routes/admin')
+var adminRoute = require('./routes/admin');
+var resetPassword = require('./routes/reset');
 
 
 // view engine setup
@@ -63,6 +64,8 @@ app.use('/users', usersRouter);
 app.use('/audio',audio);
 app.use('/hindiText',hindiText);
 app.use('/admin6089',adminRoute);
+app.use('/reset',resetPassword);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

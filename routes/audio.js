@@ -57,7 +57,8 @@ audio.route('/')
     .catch((err)=>next(err));
 })
 .post(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
-    if(req.body!=null){
+    // console.log(req.body,req.body.fileName,req.body.textInfo);
+    if(req.body!=null && req.body.fileName && req.body.textInfo){
         AudioData.create({
             fileName: req.body.fileName,
             speaker: req.user._id,
@@ -91,24 +92,32 @@ audio.route('/')
 })
 // Verificatoin of an audio
 .put(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
-    AudioData.findByIdAndUpdate(req.body._id,
-        {
-            $set:{
-                verified:1,
-                verificationResult:req.body.verificationResult
-            }
-        },
-        {new:true}
-    )
-    .then((audio)=>{
-        console.log(audio);
-        res.statusCode = 200;
-        res.setHeader('Content-Type','application/json');
-        res.json({
-            "success":true
-        });
-    },(err)=>next(err))
-    .catch((err)=>next(err));
+    console.log(req.body,req.body.verificationResult);
+    if(req.body && req.body.verificationResult!=null && req.body.verificationResult!=undefined){
+        AudioData.findByIdAndUpdate(req.body._id,
+            {
+                $set:{
+                    verified:1,
+                    verificationResult:req.body.verificationResult
+                }
+            },
+            {new:true}
+        )
+        .then((audio)=>{
+            console.log(audio);
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json({
+                "success":true
+            });
+        },(err)=>next(err))
+        .catch((err)=>next(err));
+    }
+    else{
+        err = new Error('Missing Information');
+        err.status = 404;
+        return next(err);   
+    }
 })
 // .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
 //     AudioData.remove({})
