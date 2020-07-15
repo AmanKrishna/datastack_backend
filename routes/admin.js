@@ -18,11 +18,11 @@ adminRouter.use(bodyParser.json());
 adminRouter.route('/isAdmin')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
-  console.log(req.params.minVerify+" "+req.params.maxVerify);
+  // console.log(req.params.minVerify+" "+req.params.maxVerify);
   User.findById(req.user._id)
     .then((user)=>{
       if(!user){
-        console.log(user)
+        // console.log(user)
         res.statusCode=200;
         res.setHeader('Content-type','application/json');
         res.json({
@@ -31,7 +31,7 @@ adminRouter.route('/isAdmin')
         return;
       }
       if(user.admin){
-        console.log(user)
+        // console.log(user)
         res.statusCode=200;
         res.setHeader('Content-type','application/json');
         res.json({
@@ -39,7 +39,7 @@ adminRouter.route('/isAdmin')
         });
         return;
       }
-      console.log(user)
+      // console.log(user)
       res.statusCode=200;
       res.setHeader('Content-type','application/json');
       res.json({
@@ -48,12 +48,12 @@ adminRouter.route('/isAdmin')
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-// get By lastActive
+// Count user By lastActive
 adminRouter.route('/users/:hours/:minRecord/:maxRecord/:minVerify/:maxVerify')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
-  console.log(req.params.minVerify+" "+req.params.maxVerify);
-  User.find({
+  // console.log(req.params.minVerify+" "+req.params.maxVerify);
+  User.countDocuments({
       "lastActive":{$gt:new Date(Date.now() - req.params.hours*60*60*1000)},
       "verified":{
         $gte:req.params.minVerify,
@@ -64,16 +64,16 @@ adminRouter.route('/users/:hours/:minRecord/:maxRecord/:minVerify/:maxVerify')
         $lte:req.params.maxRecord
       }
     })
-    .then((users)=>{
-        console.log(users)
+    .then((count)=>{
+        // console.log(users)
       res.statusCode=200;
       res.setHeader('Content-type','application/json');
-      res.json(users.length);    
+      res.json(count);    
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
 
-
+// get list of user based on conditions
 adminRouter.route('/users/list/:hours/:minRecord/:maxRecord/:minVerify/:maxVerify')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) =>{
@@ -89,7 +89,7 @@ adminRouter.route('/users/list/:hours/:minRecord/:maxRecord/:minVerify/:maxVerif
     }
   })
   .then((users)=>{
-        console.log(users.length)
+        // console.log(users.length)
       res.statusCode=200;
       res.setHeader('Content-type','application/json');
       res.json(users);    

@@ -15,7 +15,10 @@ audio.route('/')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req,res,next)=>{
     AudioData.aggregate([
-        {$match:{verified:0}},
+        {$match:{
+            verified:0,
+            speaker: {$ne:req.user._id}
+        }},
         {$lookup: {
             from: HindiText.collection.name,
             localField: "textInfo",
@@ -28,7 +31,8 @@ audio.route('/')
     // .populate('speaker')
     // .populate('textInfo')
     .then((audio)=>{
-        console.log(audio);
+        console.log("Current User\n",req.user._id);
+        console.log("rRetrieved Audio:\n",audio);
         if(audio.length===0){
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
@@ -106,17 +110,18 @@ audio.route('/')
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
-.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
-    AudioData.remove({})
-    .then((resp)=>{
-        // console.log("Audio Uploaded");
-        res.statusCode = 200;
-        res.setHeader('Content-Type','application/json');
-        res.json(resp);
-    },(err)=>next(err))
-    .catch((err)=>next(err));
-})
+// .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
+//     AudioData.remove({})
+//     .then((resp)=>{
+//         // console.log("Audio Uploaded");
+//         res.statusCode = 200;
+//         res.setHeader('Content-Type','application/json');
+//         res.json(resp);
+//     },(err)=>next(err))
+//     .catch((err)=>next(err));
+// })
 
+// deleting a specific audio and modifying its hindiText in db
 audio.route('/:audioId/:textId')
 .options(cors.cors,(req,res)=>res.sendStatus=200)
 .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=>{
