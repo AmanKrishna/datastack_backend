@@ -125,7 +125,7 @@ router.route('/login')
 });
 
 // get the #of verifications and recroding for this user
-router.route('/:username')
+router.route('/username/:username')
 .options(cors.corsWithOptions,(req,res)=>res.sendStatus=200)
 .get(cors.corsWithOptions,authenticate.verifyUser,(req, res, next) =>{
   // console.log(req.user._id+"\n"+req.params.userId);
@@ -160,7 +160,6 @@ router.route('/:username')
     }
   })
   })
-
 .put(cors.corsWithOptions,authenticate.verifyUser,(req, res, next) =>{
   if(req.body && req.body.recorded!=null && req.body.recorded!=undefined){
     User.findOne({"_id":req.user._id})
@@ -329,7 +328,81 @@ router.route('/resetPassword')
   },(err)=>next(err))
   .catch((err)=>next(err));
 })
-
-
+.put(cors.corsWithOptions,(req, res, next) =>{
+  PasswordReset.findOne({"eamil":req.body.email})
+  .then((user)=>{
+    if(user){
+      // console.log(user.expiry.getTime()+'\n'+Date.now()+'\n');
+      // console.log(user.expiry);
+      if(user.token==req.body.token && user.expiry.getTime()>Date.now()){
+        User.findOne({
+          "username":user.eamil
+        })
+        .then((user)=>{
+          // console.log(user);
+          if(user){
+            user.setPassword(req.body.password,(err,success)=>{
+              if(err){
+                console.log(err);
+                res.statusCode=500;
+                res.setHeader('Content-type','application/json');
+                res.json({
+                  "success":false,
+                  "message":"Error: Setting Password"
+                });
+              }
+              else{
+                user.save()
+                .then((user)=>{
+                  // console.log("Inside Save \n"+user);
+                  PasswordReset.findOneAndDelete({
+                    eamil:user.username
+                  })
+                  .then((resp)=>{
+                    console.log(resp);
+                    res.statusCode=200;
+                    res.setHeader('Content-type','application/json');
+                    res.json({
+                      "success":true,
+                      "message":"Password Successfully Changed"
+                    });
+                  })
+                  .catch((err)=>next(err));
+                })
+              }
+            });
+          }
+          else{
+            console.log(err);
+            res.statusCode=404;
+            res.setHeader('Content-type','application/json');
+            res.json({
+              "success":false,
+              "message":"User Not Found"
+            });
+          }
+        })
+        .catch((err)=>next(err))
+      }
+      else{
+        res.statusCode=403;
+        res.setHeader('Content-type','application/json');
+        res.json({
+          "success":false,
+          "message":"Token Expired"
+        });
+      }
+    }
+    else{
+      res.statusCode=404;
+      res.setHeader('Content-type','application/json');
+      res.json({
+        "success":false,
+        "message":"Email not found"
+      });  
+    }  
+  },(err)=>next(err))
+  .catch((err)=>next(err));
+})
 
 module.exports = router;
